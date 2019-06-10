@@ -38,7 +38,7 @@ export default {
   methods: {
     iniciarSesion() {
       if (this.$refs.form.validate()) {
-        this.$router.push('cursos')
+        this.$router.push('test')
       }
     }
   }

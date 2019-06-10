@@ -51,14 +51,20 @@
               style="height: 100%"
             >
               <embed
-                v-if="recurso_enlace"
-                :src="recurso_enlace"
+                v-if="recurso && recurso.tipo==0"
+                :src="recurso.enlace"
                 width="100%"
                 height="100%"
-                alt="pdf"
-                pluginspage="http://www.adobe.com/products/acrobat/readstep2.html"
               >
-              <div v-else></div>
+              <iframe
+                v-else-if="recurso && recurso.tipo==1"
+                :src="recurso.enlace"
+                width="100%"
+                height="100%"
+              ></iframe>
+              <div v-else style="margin: auto">
+                <v-progress-circular :size="70" :width="7" color="primary" indeterminate></v-progress-circular>
+              </div>
               <div class="my-3">
                 <v-btn
                   fab
@@ -83,34 +89,43 @@
 </template>
 
 <script>
-import Cabecera from '../components/Cabecera'
+import Cabecera from "../components/Cabecera";
 export default {
   data() {
     return {
       enviar_mensaje: true,
       texto: "",
-      recurso_enlace: "",
+      recurso: null,
       recurso_estado: 0, //0: no hay, 1: cargando, 2: hay
       recurso_maximizado: false,
       mensajes: [
         new Mensaje(1, "Hola :)"),
+        new Mensaje(0, "Hola, en qué puedo ayudarte?"),
+        new Mensaje(1, "Qué es una chatbot?"),
         new Mensaje(
           0,
-          "Hola, en qué puedo ayudarte?"
-          /*new Recurso(
+          "Un agente conversacional es una herramienta capaz de procesar lenguaje natural y ofrecer información de forma coherente en tiempo real mediante un diálogo. Estas entidades también son conocidas como chatbots.",
+          new Recurso(
             "Chatbot.pdf",
-            "https://eprints.ucm.es/32448/1/Asistente%20Virtual%20%28chatbot%29%20para%20la%20Web%20de%20la%20Facultad%20de%20Inform%C3%A1tica%28Luis%20Enrique%20Cubero%20Final%29.pdf"
-          )*/
+            "https://eprints.ucm.es/32448/1/Asistente%20Virtual%20%28chatbot%29%20para%20la%20Web%20de%20la%20Facultad%20de%20Inform%C3%A1tica%28Luis%20Enrique%20Cubero%20Final%29.pdf",
+            0
+          )
         ),
-        new Mensaje(1, "Qué es una clase?"),
+        new Mensaje(1, "Algun video?"),
         new Mensaje(
           0,
-          "Las clases en Java son plantillas para la creación de objetos, en lo que se conoce como programación orientada a objetos, la cual es una de los principales paradigmas de desarrollo de software en la actualidad. Java es un lenguaje de programación de propósito general, concurrente, orientado a objetos que fue diseñado específicamente para tener tan pocas dependencias de implementación como fuera posible."
-        ),
-        new Mensaje(1, "Gracias, ahora lo tengo más claro."),
-        new Mensaje(0, "Un placer ayudarte")
+          "Aquí tienes",
+          new Recurso(
+            "Video Chatbot",
+            "https://www.youtube.com/embed/mg6_U57ofb8",
+            1
+          )
+        )
       ]
     };
+  },
+  mounted() {
+    this.scrollDown();
   },
   methods: {
     enviarMensaje() {
@@ -132,7 +147,8 @@ export default {
             "Esta información te puede ayudar",
             new Recurso(
               "Programación.pdf",
-              "http://dis.unal.edu.co/~programacion/book/modulo1.pdf"
+              "https://www.fdi.ucm.es/profesor/luis/fp/FP.pdf",
+              0
             )
           )
         );
@@ -142,10 +158,10 @@ export default {
     },
     accionMensajeRecurso(recurso) {
       if (recurso !== undefined) {
-        this.recurso_enlace = "";
+        this.recurso = null;
         this.recurso_estado = 1; //cargando
         setTimeout(() => {
-          this.recurso_enlace = recurso.enlace;
+          this.recurso = recurso;
           this.recurso_estado = 2; //hay
         }, 500);
       }
@@ -171,9 +187,10 @@ class Mensaje {
 }
 
 class Recurso {
-  constructor(nombre, enlace) {
+  constructor(nombre, enlace, tipo) {
     this.nombre = nombre;
     this.enlace = enlace;
+    this.tipo = tipo; //0:pdf 1:video
   }
 }
 </script>
