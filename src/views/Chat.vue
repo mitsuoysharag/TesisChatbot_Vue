@@ -132,29 +132,45 @@ export default {
       if (this.texto.trim().length != 0 && this.enviar_mensaje) {
         this.enviar_mensaje = false;
         this.mensajes.push(new Mensaje(1, this.texto));
+        let consulta = {
+          codigo: this.$store.state.codigo_alumno,
+          consulta: this.texto
+        };
         this.texto = "";
-        this.responderMensaje();
 
+        this.responderMensaje(consulta);
         this.scrollDown();
       }
     },
-    responderMensaje() {
-      setTimeout(() => {
-        this.enviar_mensaje = true;
-        this.mensajes.push(
-          new Mensaje(
-            0,
-            "Esta información te puede ayudar",
-            new Recurso(
-              "Programación.pdf",
-              "https://www.fdi.ucm.es/profesor/luis/fp/FP.pdf",
-              0
-            )
-          )
-        );
-
-        this.scrollDown();
-      }, 1500);
+    responderMensaje(consulta) {
+      this.$store.state.servicio.enviarConsulta(
+        consulta,
+        //onSuccess
+        response => {
+          this.enviar_mensaje = true;
+          if (typeof response !== "undefined")
+            setTimeout(() => {
+              this.enviar_mensaje = true;
+              this.mensajes.push(
+                new Mensaje(
+                  0,
+                  "Esta información te puede ayudar",
+                  new Recurso(
+                    "Programación.pdf",
+                    "https://www.fdi.ucm.es/profesor/luis/fp/FP.pdf",
+                    0
+                  )
+                )
+              );
+              this.scrollDown();
+            }, 1500);
+        },
+        //onError
+        error => {
+          this.enviar_mensaje = true;
+          console.log(error);
+        }
+      );
     },
     accionMensajeRecurso(recurso) {
       if (recurso !== undefined) {
