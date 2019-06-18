@@ -148,22 +148,16 @@ export default {
         //onSuccess
         response => {
           this.enviar_mensaje = true;
-          if (typeof response !== "undefined")
-            setTimeout(() => {
-              this.enviar_mensaje = true;
-              this.mensajes.push(
-                new Mensaje(
-                  0,
-                  "Esta información te puede ayudar",
-                  new Recurso(
-                    "Programación.pdf",
-                    "https://www.fdi.ucm.es/profesor/luis/fp/FP.pdf",
-                    0
-                  )
-                )
-              );
-              this.scrollDown();
-            }, 1500);
+          if (typeof response !== "undefined") {
+            console.log(response);
+            this.enviar_mensaje = true;
+            this.mensajes.push(
+              new Mensaje(0, response.answer),
+              new Mensaje(0, "", new Recurso("pdf", response.text, 0)),
+              new Mensaje(0, "", new Recurso("video", response.video, 0))
+            );
+            this.scrollDown();
+          }
         },
         //onError
         error => {

@@ -35,7 +35,7 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="primary" flat @click="dialog = false">Cancelar</v-btn>
-            <v-btn color="primary" flat @click="dialog = false; enviarTest()">Aceptar</v-btn>
+            <v-btn color="primary" flat @click="dialog = false; enviarPerfil()">Aceptar</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -234,8 +234,9 @@ export default {
     };
   },
   methods: {
-    enviarTest() {
+    enviarPerfil() {
       let perfil = {
+        codigo: this.$store.state.codigo_alumno,
         processing: {
           active: 0,
           reflexive: 0
@@ -250,7 +251,7 @@ export default {
         },
         understanding: {
           sequential: 0,
-          global: 0
+          _global: 0
         }
       };
       let respuestas = this.preguntas_test.forEach((pregunta_test, index) => {
@@ -267,12 +268,21 @@ export default {
           else if (res == 1) perfil.input.verbal += 1;
         if (pos == 3)
           if (res == 0) perfil.understanding.sequential += 1;
-          else if (res == 1) perfil.understanding.global += 1;
+          else if (res == 1) perfil.understanding._global += 1;
       });
-
-      console.log(perfil);
-      this.$router.push("cursos");
-    }
+      this.$store.state.servicio.enviarPerfil(
+        perfil,
+        //onSuccess
+        response => {
+          console.log('Guardado');
+          this.$router.push("cursos");
+        },
+        //onError
+        error => {
+          console.log(error);
+        }
+      );
+    },
   },
   components: {
     Cabecera
