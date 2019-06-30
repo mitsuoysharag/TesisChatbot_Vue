@@ -54,7 +54,6 @@
         </div>
       </v-card>
     </v-flex>
-
     <v-flex v-if="recurso_estado != 0" xs12 md7 style="height: 100%">
       <v-card class="elevation-6 fill-height">
         <div
