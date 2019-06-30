@@ -125,9 +125,20 @@ export default {
 
           if (typeof response !== "undefined") {
             this.enviar_mensaje = true;
-            this.mensajes.push(
-              new Mensaje(0, response.respuesta, response.pdf, response.video)
-            );
+            let pdf = "";
+            let video = "";
+            if (response.entrada.verbal >= response.entrada.visual) {
+              pdf = response.pdf;
+              if (this.$store.state.recursos_mostrar_auto)
+                this.accionMensajeRecurso(pdf);
+            }
+            if (response.entrada.visual >= response.entrada.verbal) {
+              video = response.video;
+              if (this.$store.state.recursos_mostrar_auto)
+                this.accionMensajeRecurso(video);
+            }
+
+            this.mensajes.push(new Mensaje(0, response.respuesta, pdf, video));
             this.scrollDown();
 
             console.log(response);
