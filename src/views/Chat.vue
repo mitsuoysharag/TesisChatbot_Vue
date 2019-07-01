@@ -1,6 +1,6 @@
 <template>
   <v-content class="chat-vista">
-    <Cabecera/>
+    <Cabecera />
     <v-container fluid grid-list-xl style="height: 100%">
       <v-layout justify-center wrap style="height: 100%">
         <v-flex xs12 md5 style="height: 100%">
@@ -11,15 +11,37 @@
                   <v-flex v-for="(mensaje, index) in mensajes" :key="index">
                     <v-card
                       v-ripple
-                      @click="accionMensajeRecurso(mensaje.recurso)"
-                      class="chat-mensaje elevation-4"
+                      class="chat-mensaje elevation-3"
                       :class="{ 'chat-mensaje-0':mensaje.autor==0, 'chat-mensaje-1':mensaje.autor==1 }"
                     >
-                      <span>{{mensaje.texto}}</span>
-                      <div v-if="mensaje.recurso" class="chat-mensaje-recurso">
-                        <span>{{mensaje.recurso.nombre}}</span>
-                      </div>
+                      <span>{{mensaje.mensaje}}</span>
                     </v-card>
+                    <div style="color: #ccc">
+                      <v-btn
+                        v-if="mensaje.texto"
+                        @click="accionMensajeRecurso(mensaje.texto)"
+                        small
+                        fab
+                        icon
+                        outline
+                        color="#1976d2"
+                        class="ma-0 my-1 ml-2"
+                      >
+                        <v-icon>file_copy</v-icon>
+                      </v-btn>
+                      <v-btn
+                        v-if="mensaje.video"
+                        @click="accionMensajeRecurso(mensaje.video)"
+                        small
+                        fab
+                        icon
+                        outline
+                        color="#1976d2"
+                        class="ma-0 my-1 ml-2"
+                      >
+                        <v-icon>video_library</v-icon>
+                      </v-btn>
+                    </div>
                   </v-flex>
                 </v-layout>
               </v-container>
@@ -50,18 +72,7 @@
               :class="{ 'chat-recurso-maximizado':recurso_maximizado }"
               style="height: 100%"
             >
-              <embed
-                v-if="recurso && recurso.tipo==0"
-                :src="recurso.enlace"
-                width="100%"
-                height="100%"
-              >
-              <iframe
-                v-else-if="recurso && recurso.tipo==1"
-                :src="recurso.enlace"
-                width="100%"
-                height="100%"
-              ></iframe>
+              <embed v-if="recurso" :src="recurso" width="100%" height="100%" />
               <div v-else style="margin: auto">
                 <v-progress-circular :size="70" :width="7" color="primary" indeterminate></v-progress-circular>
               </div>
@@ -98,30 +109,7 @@ export default {
       recurso: null,
       recurso_estado: 0, //0: no hay, 1: cargando, 2: hay
       recurso_maximizado: false,
-      mensajes: [
-        new Mensaje(1, "Hola :)"),
-        new Mensaje(0, "Hola, en qué puedo ayudarte?"),
-        new Mensaje(1, "Qué es una chatbot?"),
-        new Mensaje(
-          0,
-          "Un agente conversacional es una herramienta capaz de procesar lenguaje natural y ofrecer información de forma coherente en tiempo real mediante un diálogo. Estas entidades también son conocidas como chatbots.",
-          new Recurso(
-            "Chatbot.pdf",
-            "https://eprints.ucm.es/32448/1/Asistente%20Virtual%20%28chatbot%29%20para%20la%20Web%20de%20la%20Facultad%20de%20Inform%C3%A1tica%28Luis%20Enrique%20Cubero%20Final%29.pdf",
-            0
-          )
-        ),
-        new Mensaje(1, "Algun video?"),
-        new Mensaje(
-          0,
-          "Aquí tienes",
-          new Recurso(
-            "Video Chatbot",
-            "https://www.youtube.com/embed/mg6_U57ofb8",
-            1
-          )
-        )
-      ]
+      mensajes: [new Mensaje(0, "Soy tu docente virtual. Prueba escribiéndome algo.")]
     };
   },
   mounted() {
@@ -132,42 +120,47 @@ export default {
       if (this.texto.trim().length != 0 && this.enviar_mensaje) {
         this.enviar_mensaje = false;
         this.mensajes.push(new Mensaje(1, this.texto));
-        let consulta = {
-          codigo: this.$store.state.codigo_alumno,
+
+        let data = {
+          alumno_id: this.$store.state.alumno_id,
           consulta: this.texto
         };
         this.texto = "";
 
-        this.responderMensaje(consulta);
+        this.obtenerRespuesta(data);
         this.scrollDown();
       }
     },
-    responderMensaje(consulta) {
-      this.$store.state.servicio.enviarConsulta(
-        consulta,
-        //onSuccess
+    obtenerRespuesta(data) {
+      console;
+      this.$store.state.servicio.obtenerRespuesta(
+        data,
         response => {
+          //onSuccess
           this.enviar_mensaje = true;
+          console.log(response);
+
           if (typeof response !== "undefined") {
-            console.log(response);
             this.enviar_mensaje = true;
             this.mensajes.push(
-              new Mensaje(0, response.answer),
-              new Mensaje(0, "", new Recurso("pdf", response.text, 0)),
-              new Mensaje(0, "", new Recurso("video", response.video, 0))
+              new Mensaje(0, response.respuesta, response.pdf, response.video)
             );
             this.scrollDown();
+
+            console.log(response);
           }
         },
-        //onError
         error => {
+          //onError
           this.enviar_mensaje = true;
+          this.scrollDown();
+
           console.log(error);
         }
       );
     },
     accionMensajeRecurso(recurso) {
-      if (recurso !== undefined) {
+      if (recurso !== undefined && recurso.trim() !== "") {
         this.recurso = null;
         this.recurso_estado = 1; //cargando
         setTimeout(() => {
@@ -189,18 +182,11 @@ export default {
   }
 };
 class Mensaje {
-  constructor(autor, texto, recurso) {
+  constructor(autor, mensaje, texto, video) {
     this.autor = autor;
+    this.mensaje = mensaje;
     this.texto = texto;
-    this.recurso = recurso;
-  }
-}
-
-class Recurso {
-  constructor(nombre, enlace, tipo) {
-    this.nombre = nombre;
-    this.enlace = enlace;
-    this.tipo = tipo; //0:pdf 1:video
+    this.video = video;
   }
 }
 </script>
@@ -227,23 +213,22 @@ class Recurso {
   box-shadow: -1px 4px 14px -2px rgba(0, 0, 0, 0.5);
 }
 .chat-mensaje {
-  padding: 9px 14px;
+  padding: 10px 14px;
   cursor: pointer;
-  font-size: 16px;
-  border-radius: 10px;
+  font-size: 15px;
+  border-radius: 6px;
   width: max-content;
-  max-width: 80%;
-}
-.chat-mensaje-recurso {
-  color: blue;
+  max-width: 75%;
 }
 .chat-mensaje-0 {
   float: left;
-  background: #f9e5cc !important;
+  background: #fff !important;
+  margin-right: 8px
 }
 .chat-mensaje-1 {
   float: right;
-  background: #afdaff !important;
+  color: #fff;
+  background: #1976d2 !important;
 }
 .chat-recurso {
   display: flex;
@@ -264,16 +249,5 @@ class Recurso {
   height: 100%;
   border-bottom: 1px solid #ccc;
   overflow-y: auto;
-}
-/*Scrollbar*/
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background: rgb(224, 223, 223);
-}
-::-webkit-scrollbar-thumb:hover {
-  cursor: pointer;
-  background: rgb(206, 206, 206);
 }
 </style>

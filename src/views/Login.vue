@@ -14,6 +14,7 @@
             v-model="contraseña"
             :rules="contraseñaRules"
             label="Contraseña"
+            type="password"
           ></v-text-field>
         </v-card-text>
         <v-card-actions>

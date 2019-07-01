@@ -5,23 +5,25 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    codigo_alumno: "14200098",
+    codigo_alumno: '14200098',
+    alumno_id: '5d192b8f1c9d4400001f40ad',
+    profesor_id: '5d192cdd1c9d4400001f40b1',
+    curso_id: '5d192d021c9d4400001f40b2',
 
     servicio: {
-      enviarConsulta(consulta, onSuccess, onError) {
-        console.log(JSON.stringify(consulta))
-        fetch('https://adaptive-chatbot.herokuapp.com/pregunta',{
+      obtenerRespuesta(data, onSuccess, onError) {
+        fetch('https://adaptive-chatbot.herokuapp.com/obtenerRespuesta', {
           method: 'POST',
-          body: JSON.stringify(consulta),
-          headers:{
+          body: JSON.stringify(data),
+          headers: {
             'Content-Type': 'application/json'
           }
         })
-        .then(response => response.json())
-        .catch(error => onError(error))
-        .then(response => onSuccess(response))
+          .then(response => response.json())
+          .catch(error => onError(error))
+          .then(response => onSuccess(response))
       },
-      enviarPerfil(perfil, onSuccess, onError) {
+      /*enviarPerfil(perfil, onSuccess, onError) {
         console.log(JSON.stringify(perfil))
         fetch('https://adaptive-chatbot.herokuapp.com/perfil',{
           method: 'POST',
@@ -32,7 +34,7 @@ export default new Vuex.Store({
         })
         .then(response => onSuccess())
         .catch(error => onError(error))
-      }
+      }*/
     }
   },
   mutations: {
